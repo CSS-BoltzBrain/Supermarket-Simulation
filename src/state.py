@@ -19,13 +19,19 @@ class AgentMap:
         """Detect potential deadlocks in the agent map."""
         return False
 
+    def _agent_thinking(self):
+        pass
+
     def _write_agent_map(self) -> None:
         """Write/replace the agent map."""
         # if potential deadlock detected, update slightly differently
         if self._potential_deadlock_detection():
-            pass
+            self._agent_thinking()
         else:
-            pass
+            self._agent_thinking()
+        
+        # Write/replace the agent map
+        pass
     
     def update(self) -> None:
         """Update the agent map with arbitrary keyword arguments."""
