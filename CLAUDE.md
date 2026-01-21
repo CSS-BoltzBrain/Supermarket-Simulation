@@ -64,21 +64,39 @@ agent:
 map:
   scale_factor: 1            # Agent map scale relative to shop map
 
-# Shop layout (2D grid, row by row)
-shop_layout: |
-  ####################
-  #E.................#
-  #..................#
-  #..SSPPSS..SSPPSS..#
-  #..S....S..S....S..#
-  #..SSPPSS..SSPPSS..#
-  #..................#
-  #..SSPPSS..SSPPSS..#
-  #..S....S..S....S..#
-  #..SSPPSS..SSPPSS..#
-  #..................#
-  #.................X#
-  ####################
+# Shop layout (2D grid)
+#Shelf elements are able to be converted to be product elements.
+#So We do not need to define "product" in "shop_layout".
+shop_layout:
+  size:
+    - x: 100
+      y: 100
+  shelf:
+    - type: rectangle
+      x: 0
+      y: 10
+      width: 6
+      height: 3
+    - type: rectangle
+      x: 10
+      y: 10
+      width: 6
+      height: 3
+    - type: circle
+      x: 30
+      y: 10
+      radius: 4
+  entrance:
+    - x: 0
+      y: 0
+      width: 1
+      height: 1
+  exit:
+    - x: 100
+      y: 100
+      width: 1
+      height: 1
+
 
 # Product types (map position to product type)
 products:
