@@ -1,0 +1,41 @@
+# Simulation parameters
+simulation:
+  max_iterations: 1000
+  agent_spawn_rate: 5        # Spawn one agent every N iterations
+  agent_spawn_count: 20      # Total agents to spawn
+
+# Agent parameters
+agent:
+  interaction_distance: 1    # Distance to "reach" a product (cells)
+  product_dwell_time: 5      # Iterations to stay at each product
+
+# Map parameters
+map:
+  scale_factor: 1            # Agent map scale relative to shop map
+
+# Shop layout (2D grid, row by row)
+shop_layout: |
+  ####################
+  #E.................#
+  #..................#
+  #..SSPPSS..SSPPSS..#
+  #..S....S..S....S..#
+  #..SSPPSS..SSPPSS..#
+  #..................#
+  #..SSPPSS..SSPPSS..#
+  #..S....S..S....S..#
+  #..SSPPSS..SSPPSS..#
+  #..................#
+  #.................X#
+  ####################
+
+# Product types (map position to product type)
+products:
+  - type: "bread"
+    positions: [[3, 4], [3, 5]]
+  - type: "milk"
+    positions: [[3, 11], [3, 12]]
+  - type: "eggs"
+    positions: [[5, 4], [5, 5]]
+  - type: "cheese"
+    positions: [[7, 11], [7, 12]]
