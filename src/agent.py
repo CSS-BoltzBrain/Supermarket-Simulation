@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional
 from collections import deque
+import random
 
 from state import ShopMap, AgentMap, CellType
 
@@ -21,12 +22,21 @@ class Agent:
     interaction_distance: int = 1
     collected_products: List[str] = field(default_factory=list)
     heading_to_exit: bool = False
+    stuck_counter: int = 0
+    last_position: Optional[Tuple[int, int]] = None
 
     def think(self, shop_map: ShopMap, agent_map: AgentMap) -> Tuple[int, int]:
         """
         Determine the desired movement direction.
         Returns movement vector (delta_row, delta_col).
         """
+        # Track if stuck
+        if self.last_position == self.position:
+            self.stuck_counter += 1
+        else:
+            self.stuck_counter = 0
+        self.last_position = self.position
+
         # If dwelling at a product, stay in place
         if self.dwell_counter > 0:
             self.dwell_counter -= 1
@@ -48,8 +58,23 @@ class Agent:
                 self.current_target = self.product_list.pop(0)
                 positions = shop_map.get_product_positions_by_type(self.current_target)
                 if positions:
-                    # Find closest product position
-                    self.current_target_position = self._find_closest_position(positions)
+                    # Find best product position considering accessibility
+                    self.current_target_position = self._find_best_product_position(
+                        shop_map, agent_map, positions)
+
+        # If stuck for too long, try to find alternative target position or make random move
+        if self.stuck_counter > 10:
+            if self.current_target and not self.heading_to_exit:
+                positions = shop_map.get_product_positions_by_type(self.current_target)
+                if positions:
+                    self.current_target_position = self._find_best_product_position(
+                        shop_map, agent_map, positions)
+            # Try a random move to break deadlock
+            if self.stuck_counter > 15 and random.random() < 0.3:
+                random_move = self._get_random_walkable_direction(shop_map, agent_map)
+                if random_move != (0, 0):
+                    self.stuck_counter = 0
+                    return random_move
 
         # If no target position, stay in place
         if self.current_target_position is None:
@@ -83,6 +108,29 @@ class Agent:
                 closest = pos
 
         return closest
+
+    def _find_best_product_position(self, shop_map: ShopMap, agent_map: AgentMap,
+                                     positions: List[Tuple[int, int]]) -> Optional[Tuple[int, int]]:
+        """Find the best product position considering accessibility."""
+        candidates = []
+
+        for pos in positions:
+            # Check adjacent cells for this product
+            adj_cell = self._find_best_adjacent_walkable(shop_map, agent_map, pos)
+            if adj_cell is None:
+                continue
+
+            dist = self._manhattan_distance(self.position, adj_cell)
+            is_occupied = agent_map.is_occupied(adj_cell[0], adj_cell[1])
+            # Prioritize positions with unoccupied adjacent cells
+            candidates.append((is_occupied, dist, pos))
+
+        if not candidates:
+            # Fallback to closest
+            return self._find_closest_position(positions)
+
+        candidates.sort(key=lambda x: (x[0], x[1]))
+        return candidates[0][2]
 
     def _manhattan_distance(self, pos1: Tuple[int, int], pos2: Tuple[int, int]) -> int:
         """Calculate Manhattan distance between two positions."""
@@ -134,13 +182,17 @@ class Agent:
         if self.current_target_position is None:
             return (0, 0)
 
-        # For products, find walkable cell adjacent to the product
+        # For products, find the best walkable cell adjacent to the product
         if not self.heading_to_exit:
-            target = self._find_adjacent_walkable(shop_map, self.current_target_position)
+            target = self._find_best_adjacent_walkable(shop_map, agent_map, self.current_target_position)
             if target is None:
                 return (0, 0)
         else:
             target = self.current_target_position
+
+        # If already at target, stay in place
+        if self.position == target:
+            return (0, 0)
 
         # BFS to find path
         path = self._bfs_path(shop_map, agent_map, self.position, target)
@@ -151,6 +203,28 @@ class Agent:
 
         # Fallback to simple direction
         return self._get_direction_to(target)
+
+    def _find_best_adjacent_walkable(self, shop_map: ShopMap, agent_map: AgentMap,
+                                      target: Tuple[int, int]) -> Optional[Tuple[int, int]]:
+        """Find the best walkable cell adjacent to the target (closest to agent)."""
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        candidates = []
+
+        for dr, dc in directions:
+            adj_row = target[0] + dr
+            adj_col = target[1] + dc
+            if shop_map.is_walkable(adj_row, adj_col):
+                dist = self._manhattan_distance(self.position, (adj_row, adj_col))
+                occupied = agent_map.is_occupied(adj_row, adj_col)
+                # Prioritize unoccupied cells, then by distance
+                candidates.append((occupied, dist, (adj_row, adj_col)))
+
+        if not candidates:
+            return None
+
+        # Sort by occupied (False first), then by distance
+        candidates.sort(key=lambda x: (x[0], x[1]))
+        return candidates[0][2]
 
     def _find_adjacent_walkable(self, shop_map: ShopMap, target: Tuple[int, int]) -> Optional[Tuple[int, int]]:
         """Find a walkable cell adjacent to the target."""
@@ -194,6 +268,20 @@ class Agent:
                 queue.append((next_pos, path + [next_pos]))
 
         return []  # No path found
+
+    def _get_random_walkable_direction(self, shop_map: ShopMap, agent_map: AgentMap) -> Tuple[int, int]:
+        """Get a random direction to a walkable, unoccupied cell."""
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        random.shuffle(directions)
+
+        for dr, dc in directions:
+            new_row = self.position[0] + dr
+            new_col = self.position[1] + dc
+            if (shop_map.is_walkable(new_row, new_col) and
+                not agent_map.is_occupied(new_row, new_col)):
+                return (dr, dc)
+
+        return (0, 0)
 
     def update_position(self, new_position: Tuple[int, int]) -> None:
         """Update internal position state."""

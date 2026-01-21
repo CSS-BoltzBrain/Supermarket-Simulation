@@ -14,28 +14,49 @@ map:
   scale_factor: 1            # Agent map scale relative to shop map
 
 # Shop layout (2D grid, row by row)
+# P = Product locations (at shelf edges, accessible from aisles)
+# S = Shelf (obstacle)
+# Open aisles allow agents to reach products
 shop_layout: |
   ####################
   #E.................#
   #..................#
-  #..SSPPSS..SSPPSS..#
-  #..S....S..S....S..#
-  #..SSPPSS..SSPPSS..#
+  #.SSPP.SSPP.SSPP...#
   #..................#
-  #..SSPPSS..SSPPSS..#
-  #..S....S..S....S..#
-  #..SSPPSS..SSPPSS..#
+  #.SSPP.SSPP.SSPP...#
+  #..................#
+  #.SSPP.SSPP.SSPP...#
+  #..................#
+  #.SSPP.SSPP.SSPP...#
   #..................#
   #.................X#
   ####################
 
 # Product types (map position to product type)
+# Positions match the 'P' cells in shop_layout (row, col)
+# Layout has shelves in rows 3, 5, 7, 9 with products at columns 4-5, 9-10, 14-15
 products:
   - type: "bread"
     positions: [[3, 4], [3, 5]]
   - type: "milk"
-    positions: [[3, 11], [3, 12]]
+    positions: [[3, 9], [3, 10]]
+  - type: "apples"
+    positions: [[3, 14], [3, 15]]
   - type: "eggs"
     positions: [[5, 4], [5, 5]]
   - type: "cheese"
-    positions: [[7, 11], [7, 12]]
+    positions: [[5, 9], [5, 10]]
+  - type: "butter"
+    positions: [[5, 14], [5, 15]]
+  - type: "cereal"
+    positions: [[7, 4], [7, 5]]
+  - type: "juice"
+    positions: [[7, 9], [7, 10]]
+  - type: "yogurt"
+    positions: [[7, 14], [7, 15]]
+  - type: "pasta"
+    positions: [[9, 4], [9, 5]]
+  - type: "rice"
+    positions: [[9, 9], [9, 10]]
+  - type: "soup"
+    positions: [[9, 14], [9, 15]]
