@@ -5,6 +5,19 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import traceback
 
+import sys
+import os
+
+# Get the path to the project root (one level up from this file)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+# Add it to the system path so Python can find 'src'
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# NOW you can import from src
+from src.maze_solver_v2 import AgentPathfinder
+
 # Import your existing modules
 from src.layout import load_layout_yaml, load_products
 from src.maze_solver_v2 import AgentPathfinder
