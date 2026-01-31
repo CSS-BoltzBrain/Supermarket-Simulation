@@ -1,0 +1,44 @@
+width: 600
+height: 300
+
+walls:
+  # Top boundary
+  - type: rectangle
+    x: 0
+    y: 299
+    width: 600
+    height: 1
+  # Bottom boundary
+  - type: rectangle
+    x: 0
+    y: 0
+    width: 600
+    height: 1
+  # Right boundary
+  - type: rectangle
+    x: 599
+    y: 0
+    height: 300
+    width: 1
+  # Left boundary 1
+  - type: rectangle
+    x: 0
+    y: 0
+    width: 1
+    height: 300
+
+entrance:
+  - type: line
+    start: [0, 40]
+    end: [0, 80]
+  - type: line
+    start: [599, 40]
+    end: [599, 80]
+
+exit:
+  - type: line
+    start: [0,200]
+    end: [0,280]
+  - type: line
+    start: [599,200]
+    end: [599,280]
